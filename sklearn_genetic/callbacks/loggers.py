@@ -60,7 +60,7 @@ class LogbookSaver(BaseCallback):
         ----------
         checkpoint_path: str
             Location where checkpoint will be saved to
-        dump_options, str
+        dump_options: dict, str
             Valid kwargs from joblib :class:`~joblib.dump`
         """
 
@@ -116,5 +116,34 @@ class TensorBoard(BaseCallback):
             for metric in Metrics.list():
                 tf.summary.scalar(name=metric, data=stats[metric], step=stats["gen"])
         writer.flush()
+
+        return False
+
+class ModelCheckpoint(BaseCallback):
+    """
+    Saves the training progress and the estimator.logbook parameter chapter object in a local file system.
+    """
+
+    def __init__(self, checkpoint_path, **dump_options):
+        """
+        Parameters
+        ----------
+        checkpoint_path: str
+            Location where checkpoint will be saved to
+        dump_options: dict, str
+            Valid kwargs from joblib :class:`~joblib.dump`
+        """
+        self.checkpoint_path = checkpoint_path
+        self.dump_options = dump_options
+
+    def on_step(self, record=None, logbook=None, estimator=None):       
+        try:
+            # Save the logbook
+            logbook_saver = LogbookSaver(self.checkpoint_path, self.dump_options)
+            logbook_saver.on_step(record, logbook, estimator)
+            # Save the model
+            estimator.save(f'{self.checkpoint_path}/model.pkl')
+        except Exception as e:
+            logger.error('Could not save the model and logbook in the checkpoint')
 
         return False

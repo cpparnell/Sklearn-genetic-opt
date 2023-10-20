@@ -2,6 +2,7 @@ import random
 import time
 import warnings
 
+import pickle
 import numpy as np
 from deap import base, creator, tools
 from sklearn.base import clone
@@ -657,6 +658,17 @@ class GASearchCV(BaseSearchCV):
         self.generations otherwise
         """
         return self._n_iterations
+
+    def save(self, filename) -> None:
+        """Save the state of the genetic algorithm to a file."""
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+    
+    @classmethod
+    def load(cls, filename):
+        """Load the state of the genetic algorithm from a file."""
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
 
 
 class GAFeatureSelectionCV(MetaEstimatorMixin, SelectorMixin, BaseEstimator):
@@ -1366,6 +1378,16 @@ class GAFeatureSelectionCV(MetaEstimatorMixin, SelectorMixin, BaseEstimator):
         """
         return self.estimator.score(self.transform(X), y)
 
+    def save(self, filename: str) -> None:
+        """Save the state of the genetic algorithm to a file."""
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+    
+    @classmethod
+    def load(cls, filename: str):
+        """Load the state of the genetic algorithm from a file."""
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
 
 # helpers
 
